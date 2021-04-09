@@ -1,7 +1,8 @@
 {
-    "service_name": "ServicioXParaBorrar",
-    "description": "experimentando",
-    "package_path": "dotnet",
-    "service_path": "/home/muhib/DevOps/loopdatetime/Output/BuildApp.dll",
-    "service_url": "localhost:6000"
+    "service_name": "demogreenrpi",
+    "description": "experimentando creando script para automatizar creacion de servicio",
+    "package_path": "/home/pi/experiments/GreenRpi/.venv/bin/python",
+    "service_path": "main.py somearg",
+    "service_url": "localhost:6000",
+    "working_dir": "/home/pi/experiments/GreenRpi/"
 }

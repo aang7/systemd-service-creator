@@ -36,36 +36,30 @@ fi
 validateJSON DATA_FILE resulted_data # included in the imported lib
 
 if [ $? -ne 0 ]; then
+    echo "error validating conf json file"
     exit 1
 fi
 
 
 
 delimeter='$'
-SplitLineByDelimeter resulted_data delimeter split_result
-echo ${result}
-echo ${split_result[0]}
-echo ${split_result[1]}
-echo ${split_result[2]}
+SplitLineByDelimeter resulted_data delimeter conf_params
 
-echo $?
-exit 1
+# initializing the central variables
+SERVICE_NAME=${conf_params[0]}
+DESCRIPTION=${conf_params[1]}
+PKG_PATH=${conf_params[2]}
+SERVICE_PATH=${conf_params[3]}
+WORKING_DIRECTORY=${conf_params[4]}
 
+echo $SERVICE_NAME
+echo $DESCRIPTION
+echo $PKG_PATH
+echo $SERVICE_PATH
+echo $WORKING_DIRECTORY
 
+# exit 0
 
-# parse the json file
-SERVICE_NAME=$(cat $DATA_FILE | jq '.service_name')
-DESCRIPTION=$(cat $DATA_FILE | jq '.description')
-PKG_PATH=$(cat $DATA_FILE | jq '.package_path')
-SERVICE_PATH=$(cat $DATA_FILE | jq '.service_path')
-# SERVICE_URL=$(cat $DATA_FILE | jq '.service_url')
-
-# remove the double quotes
-DESCRIPTION=${DESCRIPTION//'"'/}
-SERVICE_NAME=${SERVICE_NAME//'"'/}
-PKG_PATH=${PKG_PATH//'"'/}
-SERVICE_PATH=${SERVICE_PATH//'"'/}
-# SERVICE_URL=${SERVICE_URL//'"'/}
 
 # check if service is active
 IS_ACTIVE=$(sudo systemctl is-active $SERVICE_NAME)
@@ -83,6 +77,7 @@ else
 Description=$DESCRIPTION
 After=network.target
 [Service]
+WorkingDirectory=$WORKING_DIRECTORY
 ExecStart=$PKG_PATH $SERVICE_PATH
 Restart=on-failure
 [Install]
@@ -90,9 +85,9 @@ WantedBy=multi-user.target
 EOF
     # restart daemon, enable and start service
     echo "Reloading daemon and enabling service"
-    # sudo systemctl daemon-reload 
-    # sudo systemctl enable ${SERVICE_NAME//'.service'/} # remove the extension
-    # sudo systemctl start ${SERVICE_NAME//'.service'/}
+    sudo systemctl daemon-reload 
+    sudo systemctl enable ${SERVICE_NAME//'.service'/} # remove the extension
+    sudo systemctl start ${SERVICE_NAME//'.service'/}
     echo "Service Started"
 fi
 
