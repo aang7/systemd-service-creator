@@ -1,0 +1,7 @@
+{
+    "service_name": "ServicioXParaBorrar",
+    "description": "experimentando",
+    "package_path": "dotnet",
+    "service_path": "/home/muhib/DevOps/loopdatetime/Output/BuildApp.dll",
+    "service_url": "localhost:6000"
+}
