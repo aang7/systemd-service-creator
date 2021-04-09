@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 
-
 : '
   args: $1 -> text to be splitted
   	$2 -> delimeter char
@@ -16,12 +15,13 @@ function SplitLineByDelimeter() {
 
 }
 
-# function validateJSON() {
-#     local -n filename=$1
-# }
-# validate if the first argument it's a valid file
-filename=$1
-result=$(python validate_json.py ${filename})
+function validateJSON() {
+    # todo: validate if the first argument it's a valid file
+    
+    local -n filename=$1
+    result=$(python validate_json.py ${filename})
+}
+
 
 if [ $? -eq 0 ]; then
 

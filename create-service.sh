@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+. ./validatejson.lib
 
 ##
 ## Creates Service file based on JSON data
@@ -25,14 +26,32 @@ if [ -z "$DATA_FILE" ]; then
 fi
 
 # validate if the file is a valid JSON
-result=$(bash validatejson.sh ${DATA_FILE})
-if [ $? -eq 0 ]; then
-   echo "result: ${result}"
-else
-   echo exit 1
+#result=$(bash validatejson.sh ${DATA_FILE})
+# if [ $? -eq 0 ]; then
+#    echo "result: ${result}"
+# else
+#    echo exit 1
+# fi
+
+validateJSON DATA_FILE resulted_data # included in the imported lib
+
+if [ $? -ne 0 ]; then
+    exit 1
 fi
 
-exit 0
+
+
+delimeter='$'
+SplitLineByDelimeter resulted_data delimeter split_result
+echo ${result}
+echo ${split_result[0]}
+echo ${split_result[1]}
+echo ${split_result[2]}
+
+echo $?
+exit 1
+
+
 
 # parse the json file
 SERVICE_NAME=$(cat $DATA_FILE | jq '.service_name')
