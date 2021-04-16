@@ -1,19 +1,22 @@
 #!/usr/bin/bash
 . ./validatejson.lib
 
-##
-## Creates Service file based on JSON data
-## to run this program you need bash and python installed
-##
+## This script creates a  System.d service file based on JSON data.
+## This script needs python >= 3.6 and GNU bash (bash version used 5.0.3(1)).
+## Created by aang with the help of the open source community, on April 2021.
 
-# Sample JSON file:
+# Sample config JSON file:
 # {
-#    "service_name": "test_service",
-#    "description": "Netcore dev server",
-#    "package_path": "dotnet",
-#    "service_path": "/home/muhib/DevOps/loopdatetime/Output/BuildApp.dll",
-#    "service_url": "localhost:6000"
+#    "service_name": "service-x",
+#    "description": "description-x",
+#    "package_path": "/home/user/Project-X/.venv/bin/python",
+#    "service_path": "main.py arguments",
+#    "env_variables": { "one_env_variable": "value-x", "other_env_variable": "value-y" }
 # }
+
+## execution example of this script
+## $ bash create-service.sh conf-file.json
+
 
 # get the first argument, the JSON file
 args=("$@")
@@ -25,14 +28,6 @@ if [ -z "$DATA_FILE" ]; then
     exit 1
 fi
 
-# validate if the file is a valid JSON
-#result=$(bash validatejson.sh ${DATA_FILE})
-# if [ $? -eq 0 ]; then
-#    echo "result: ${result}"
-# else
-#    echo exit 1
-# fi
-
 validateJSON DATA_FILE resulted_data # included in the imported lib
 
 if [ $? -ne 0 ]; then
@@ -42,8 +37,11 @@ fi
 
 
 
-delimeter='$'
+delimeter=';'
 SplitLineByDelimeter resulted_data delimeter conf_params
+
+echo $?
+
 
 # initializing the central variables
 SERVICE_NAME=${conf_params[0]}
@@ -51,14 +49,31 @@ DESCRIPTION=${conf_params[1]}
 PKG_PATH=${conf_params[2]}
 SERVICE_PATH=${conf_params[3]}
 WORKING_DIRECTORY=${conf_params[4]}
+ENV_VARIABLES=${conf_params[5]}
 
 echo $SERVICE_NAME
 echo $DESCRIPTION
 echo $PKG_PATH
 echo $SERVICE_PATH
 echo $WORKING_DIRECTORY
+echo $ENV_VARIABLES
 
-# exit 0
+
+
+# from this point I need to work with sudo
+# create ${service_name}.d folder in /etc/systemd/system/ path
+SYSTEMD_PATH=/etc/systemd/system/$SERVICE_NAME
+sudo mkdir -p $SYSTEMD_PATH.service.d
+
+# create the file override.conf inside the just created folder
+sudo cat > $SYSTEMD_PATH.service.d/override.conf << EOF
+$ENV_VARIABLES
+EOF
+
+
+exit 0
+
+
 
 
 # check if service is active
