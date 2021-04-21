@@ -24,7 +24,7 @@ DATA_FILE=${args[0]}
 
 # check if argument is passed
 if [ -z "$DATA_FILE" ]; then
-    echo "JSON Data file should be passed as first argument"
+    echo "json file should be passed as first argument"
     exit 1
 fi
 
@@ -66,14 +66,17 @@ SYSTEMD_PATH=/etc/systemd/system/$SERVICE_NAME
 sudo mkdir -p $SYSTEMD_PATH.service.d
 
 # create the file override.conf inside the just created folder
-sudo cat > $SYSTEMD_PATH.service.d/override.conf << EOF
+# if it doesn't exists.
+OVERRIDE_FILE_PATH=$SYSTEMD_PATH.service.d/override.conf
+if [ ! -f $OVERRIDE_FILE_PATH ]
+then
+    echo "creating override.conf file"
+    sudo cat > $SYSTEMD_PATH.service.d/override.conf << EOF
 $ENV_VARIABLES
 EOF
-
-
-exit 0
-
-
+else
+    echo "override.conf file already exists."
+fi
 
 
 # check if service is active
@@ -85,25 +88,36 @@ if [ "$IS_ACTIVE" == "active" ]; then
     sudo systemctl restart $SERVICE_NAME
     echo "Service restarted"
 else
-    # create service file
-    echo "Creating service file"
-    sudo cat > /etc/systemd/system/${SERVICE_NAME//'"'/}.service << EOF
-[Unit]
+    SERVICE_FILE_PATH=/etc/systemd/system/$SERVICE_NAME.service
+    echo $SERVICE_FILE_PATH
+
+    # create service file if doesn't exists
+    if [ ! -f $SERVICE_FILE_PATH ];
+    then
+	echo "Creating service file"
+	sudo cat > $SERVICE_FILE_PATH << EOF
+[Unit]	
 Description=$DESCRIPTION
 After=network.target
 [Service]
+PIDFile=/tmp/$SERVICE_NAME-99.pid
 WorkingDirectory=$WORKING_DIRECTORY
 ExecStart=$PKG_PATH $SERVICE_PATH
-Restart=on-failure
+Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
-    # restart daemon, enable and start service
-    echo "Reloading daemon and enabling service"
-    sudo systemctl daemon-reload 
-    sudo systemctl enable ${SERVICE_NAME//'.service'/} # remove the extension
-    sudo systemctl start ${SERVICE_NAME//'.service'/}
-    echo "Service Started"
+	# restart daemon, enable and start service
+	echo "Reloading daemon and enabling service"
+	sudo systemctl daemon-reload 
+	sudo systemctl enable $SERVICE_NAME
+        if [ $? -ne 0 ];
+	then
+	    exit 1
+	fi
+	sudo systemctl start $SERVICE_NAME
+	echo "Service Started"
+    fi
 fi
 
 exit 0
